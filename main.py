@@ -1,5 +1,7 @@
 import pygame
+import sys
 import os
+
 
 # Classe que controla o PAC
 class Pacman:
@@ -12,7 +14,7 @@ class Pacman:
     def get_animation(self):
         for img_file in self.imgsdir:
             img_path = os.path.join(self.path_imgpac, img_file)
-            self.animationpacman.append(pygame.transform.scale(pygame.image.load(img_path), (25, 25)))
+            self.animationpacman.append(pygame.transform.scale(pygame.image.load(img_path), (40, 40)))
 
     def animacao(self, posX, posY, direcao):
         animation = []
@@ -38,157 +40,232 @@ class Pacman:
             animation.append((image, image_rect))
         return animation
 
-def draw_map(level):
-    color = 'blue'
-    PI = 3.14
-    num1 = ((640 - 10) // 32)
-    num2 = (640 // 30)
-    for i in range(len(level)):
-        for j in range(len(level[i])):
-            if level[i][j] == 1:
-                pygame.draw.circle(screen, 'white', (j * num2 + (0.5 * num2), i * num1 + (0.5 * num1)), 4)
-            if level[i][j] == 2 and not flicker:
-                pygame.draw.circle(screen, 'white', (j * num2 + (0.5 * num2), i * num1 + (0.5 * num1)), 10)
-            if level[i][j] == 3:
-                pygame.draw.line(screen, color, (j * num2 + (0.5 * num2), i * num1),
-                                (j * num2 + (0.5 * num2), i * num1 + num1), 3)
-            if level[i][j] == 4:
-                pygame.draw.line(screen, color, (j * num2, i * num1 + (0.5 * num1)),
-                                (j * num2 + num2, i * num1 + (0.5 * num1)), 3)
-            if level[i][j] == 5:
-                pygame.draw.arc(screen, color, [(j * num2 - (num2 * 0.4)) - 2, (i * num1 + (0.5 * num1)), num2, num1],
-                                0, PI / 2, 3)
-            if level[i][j] == 6:
-                pygame.draw.arc(screen, color,
-                                [(j * num2 + (num2 * 0.5)), (i * num1 + (0.5 * num1)), num2, num1], PI / 2, PI, 3)
-            if level[i][j] == 7:
-                pygame.draw.arc(screen, color, [(j * num2 + (num2 * 0.5)), (i * num1 - (0.4 * num1)), num2, num1], PI,
-                                3 * PI / 2, 3)
-            if level[i][j] == 8:
-                pygame.draw.arc(screen, color,
-                                [(j * num2 - (num2 * 0.4)) - 2, (i * num1 - (0.4 * num1)), num2, num1], 3 * PI / 2,
-                                2 * PI, 3)
-            if level[i][j] == 9:
-                pygame.draw.line(screen, 'white', (j * num2, i * num1 + (0.5 * num1)),
-                                (j * num2 + num2, i * num1 + (0.5 * num1)), 3)
+class DrawRect:
+    def __init__(self):
+        # Crie uma lista de retângulos
+        self.rectangles = [
+            #Bloco dos quadrados da esquerda
+            pygame.Rect(85, 50, 55, 40), 
+            pygame.Rect(85, 135, 55, 18), 
+            pygame.Rect(190, 50, 75, 40), 
+            #Blocos dos quadrados da direita
+            pygame.Rect(500, 50, 55, 40),
+            pygame.Rect(500, 135, 55, 15), 
+            pygame.Rect(375, 52, 78, 38), 
+            #Bordas
+            pygame.Rect(312, 5, 20, 85), 
+            pygame.Rect(320, 5, 290, 12), 
+            pygame.Rect(30, 5, 290, 12),
+            pygame.Rect(30, 5, 10, 200),
+            pygame.Rect(600, 5, 10, 200),
 
+            pygame.Rect(30, 395, 10, 240),
 
+            pygame.Rect(10, 320, 120, 10),
+            pygame.Rect(30, 390, 100, 10),
+            pygame.Rect(130, 321, 13, 80),
+            
+            pygame.Rect(30, 630, 575, 10),
 
-# Inicializa o pygame
+            pygame.Rect(10, 268, 120, 10),
+            pygame.Rect(30, 195, 100, 10),
+            pygame.Rect(130, 195, 13, 80),
+
+            pygame.Rect(600, 398, 10, 235), 
+
+            pygame.Rect(508, 318, 120, 10),
+            pygame.Rect(508, 392, 100, 10),
+            pygame.Rect(500, 321, 10, 80),
+
+            pygame.Rect(508, 269, 120, 10),
+            pygame.Rect(508, 196, 100, 10),
+            pygame.Rect(500, 198, 10, 80),
+
+            pygame.Rect(562, 505, 35, 20),
+            pygame.Rect(45, 505, 35, 20),
+
+            #T cima
+            pygame.Rect(313, 135, 15, 77),
+            pygame.Rect(252, 135, 139, 15),
+
+            pygame.Rect(438, 135, 15, 140),
+            pygame.Rect(375, 198, 60, 15),
+
+            pygame.Rect(189, 135, 15, 140),
+            pygame.Rect(207, 198, 60, 15),
+
+            pygame.Rect(314, 384, 15, 77),
+            pygame.Rect(252, 384, 138, 15),
+
+            pygame.Rect(314, 508, 15, 77),
+            pygame.Rect(252, 508, 138, 15),
+
+            #Barras Meio
+            pygame.Rect(438, 321, 15, 79),
+            pygame.Rect(189, 321, 15, 79),
+
+            #Barras Baixo
+            pygame.Rect(376, 447, 76, 15),
+            pygame.Rect(190, 447, 76, 15),
+
+            # L baixo
+            pygame.Rect(505, 447, 50, 15),
+            pygame.Rect(500, 447, 15, 75),
+
+            pygame.Rect(88, 447, 50, 15),
+            pygame.Rect(127, 447, 15, 75),
+
+            # Cacetete Baixo
+            pygame.Rect(85, 570, 180, 15),
+            pygame.Rect(189, 508, 15, 55),
+
+            pygame.Rect(375, 570, 180, 15),
+            pygame.Rect(438, 508, 15, 55),
+            
+
+            # Quadrado Meio
+            pygame.Rect(250, 330, 140, 10),
+            pygame.Rect(250, 258, 10, 72),
+            pygame.Rect(250, 258, 50, 10),
+            pygame.Rect(380, 258, 10, 72),
+            pygame.Rect(342, 258, 50, 10),
+
+            # Adicione mais retângulos conforme necessário
+        ]
+
+    def create_transparent_surface(self, width, height, color):
+        # Crie uma superfície com transparência
+        surface = pygame.Surface((width, height), pygame.SRCALPHA)
+        # Preencha a superfície com a cor e transparência
+        surface.fill(color)
+        return surface
+
+# Inicialize o Pygame
 pygame.init()
 
-# Define o tamanho da tela
-screen_size = (640, 640)
-screen = pygame.display.set_mode(screen_size)
-pygame.display.set_caption("Pacman")
+# Defina o tamanho da tela
+screen_width = 640
+screen_height = 640
+screen = pygame.display.set_mode((screen_width, screen_height))
 
-# Cria uma instância do Pacman
-player = Pacman()
-level = [
-[6, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5],
-[3, 6, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 6, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 3],
-[3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3],
-[3, 3, 1, 6, 4, 4, 5, 1, 6, 4, 4, 4, 5, 1, 3, 3, 1, 6, 4, 4, 4, 5, 1, 6, 4, 4, 5, 1, 3, 3],
-[3, 3, 2, 3, 0, 0, 3, 1, 3, 0, 0, 0, 3, 1, 3, 3, 1, 3, 0, 0, 0, 3, 1, 3, 0, 0, 3, 2, 3, 3],
-[3, 3, 1, 7, 4, 4, 8, 1, 7, 4, 4, 4, 8, 1, 7, 8, 1, 7, 4, 4, 4, 8, 1, 7, 4, 4, 8, 1, 3, 3],
-[3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3],
-[3, 3, 1, 6, 4, 4, 5, 1, 6, 5, 1, 6, 4, 4, 4, 4, 4, 4, 5, 1, 6, 5, 1, 6, 4, 4, 5, 1, 3, 3],
-[3, 3, 1, 7, 4, 4, 8, 1, 3, 3, 1, 7, 4, 4, 5, 6, 4, 4, 8, 1, 3, 3, 1, 7, 4, 4, 8, 1, 3, 3],
-[3, 3, 1, 1, 1, 1, 1, 1, 3, 3, 1, 1, 1, 1, 3, 3, 1, 1, 1, 1, 3, 3, 1, 1, 1, 1, 1, 1, 3, 3],
-[3, 7, 4, 4, 4, 4, 5, 1, 3, 7, 4, 4, 5, 0, 3, 3, 0, 6, 4, 4, 8, 3, 1, 6, 4, 4, 4, 4, 8, 3],
-[3, 0, 0, 0, 0, 0, 3, 1, 3, 6, 4, 4, 8, 0, 7, 8, 0, 7, 4, 4, 5, 3, 1, 3, 0, 0, 0, 0, 0, 3],
-[3, 0, 0, 0, 0, 0, 3, 1, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 1, 3, 0, 0, 0, 0, 0, 3],
-[8, 0, 0, 0, 0, 0, 3, 1, 3, 3, 0, 6, 4, 4, 9, 9, 4, 4, 5, 0, 3, 3, 1, 3, 0, 0, 0, 0, 0, 7],
-[4, 4, 4, 4, 4, 4, 8, 1, 7, 8, 0, 3, 0, 0, 0, 0, 0, 0, 3, 0, 7, 8, 1, 7, 4, 4, 4, 4, 4, 4],
-[0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-[4, 4, 4, 4, 4, 4, 5, 1, 6, 5, 0, 3, 0, 0, 0, 0, 0, 0, 3, 0, 6, 5, 1, 6, 4, 4, 4, 4, 4, 4],
-[5, 0, 0, 0, 0, 0, 3, 1, 3, 3, 0, 7, 4, 4, 4, 4, 4, 4, 8, 0, 3, 3, 1, 3, 0, 0, 0, 0, 0, 6],
-[3, 0, 0, 0, 0, 0, 3, 1, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 1, 3, 0, 0, 0, 0, 0, 3],
-[3, 0, 0, 0, 0, 0, 3, 1, 3, 3, 0, 6, 4, 4, 4, 4, 4, 4, 5, 0, 3, 3, 1, 3, 0, 0, 0, 0, 0, 3],
-[3, 6, 4, 4, 4, 4, 8, 1, 7, 8, 0, 7, 4, 4, 5, 6, 4, 4, 8, 0, 7, 8, 1, 7, 4, 4, 4, 4, 5, 3],
-[3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3],
-[3, 3, 1, 6, 4, 4, 5, 1, 6, 4, 4, 4, 5, 1, 3, 3, 1, 6, 4, 4, 4, 5, 1, 6, 4, 4, 5, 1, 3, 3],
-[3, 3, 1, 7, 4, 5, 3, 1, 7, 4, 4, 4, 8, 1, 7, 8, 1, 7, 4, 4, 4, 8, 1, 3, 6, 4, 8, 1, 3, 3],
-[3, 3, 2, 1, 1, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 1, 1, 2, 3, 3],
-[3, 7, 4, 5, 1, 3, 3, 1, 6, 5, 1, 6, 4, 4, 4, 4, 4, 4, 5, 1, 6, 5, 1, 3, 3, 1, 6, 4, 8, 3],
-[3, 6, 4, 8, 1, 7, 8, 1, 3, 3, 1, 7, 4, 4, 5, 6, 4, 4, 8, 1, 3, 3, 1, 7, 8, 1, 7, 4, 5, 3],
-[3, 3, 1, 1, 1, 1, 1, 1, 3, 3, 1, 1, 1, 1, 3, 3, 1, 1, 1, 1, 3, 3, 1, 1, 1, 1, 1, 1, 3, 3],
-[3, 3, 1, 6, 4, 4, 4, 4, 8, 7, 4, 4, 5, 1, 3, 3, 1, 6, 4, 4, 8, 7, 4, 4, 4, 4, 5, 1, 3, 3],
-[3, 3, 1, 7, 4, 4, 4, 4, 4, 4, 4, 4, 8, 1, 7, 8, 1, 7, 4, 4, 4, 4, 4, 4, 4, 4, 8, 1, 3, 3],
-[3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3],
-[3, 7, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 8, 3],
-[7, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 8]
+# Carregue a imagem de fundo
+background_image = pygame.image.load('assets/map.PNG')
+
+# Obtenha as dimensões da imagem original
+original_width, original_height = background_image.get_size()
+
+# Calcule a nova dimensão mantendo a proporção
+if original_width / original_height > screen_width / screen_height:
+    new_width = screen_width
+    new_height = int(screen_width * original_height / original_width)
+else:
+    new_height = screen_height
+    new_width = int(screen_height * original_width / original_height)
+
+# Redimensione a imagem de fundo para manter a proporção
+background_image = pygame.transform.scale(background_image, (new_width, new_height))
+
+# Calcule a posição para centralizar a imagem
+image_rect = background_image.get_rect(center=(screen_width / 2, screen_height / 2))
+
+# Crie uma instância da classe DrawRect
+rects = DrawRect()
+
+# Prepare superfícies transparentes para os retângulos
+transparent_surfaces = [
+    rects.create_transparent_surface(rect.width, rect.height, (255, 255, 255, 0))  # 50% de transparência
+    for rect in rects.rectangles
 ]
 
-flicker = False
-
+player = Pacman()
 # Inicializa a posição e a direção
-posX = screen_size[0] // 2
-posY = screen_size[1] // 2
+posX = 640 // 2 
+posY = 640 // 2 + 40
 direcao = 'd'  # Direção inicial
 
 # Inicializa a animação
 animation = player.init_animacao(posX, posY)
-
-# Define a cor de fundo (opcional)
-background_color = (0, 0, 0)  # Cor preta
-
-# Controla o tempo para a animação
 clock = pygame.time.Clock()
-animation_speed = 10  # Velocidade da animação (frames por segundo)
+animation_speed = 10
 frame = 0
-tecla_ativa = None
 
-# Loop principal
+# Função para verificar colisão com retângulos e ajustar a posição do Pacman
+def handle_collision(posX, posY, rectangles, dx, dy):
+    # Armazena as posições originais
+    original_x, original_y = posX, posY
+    posX += dx
+    posY += dy
+
+    pacman_rect = pygame.Rect(posX - 12, posY - 12, 25, 25)  # Considerando a largura e altura da animação do Pacman
+
+    # Ajustar a posição se houver colisão com retângulos
+    for rect in rectangles:
+        if pacman_rect.colliderect(rect):
+            # Voltar para a posição original
+            posX, posY = original_x, original_y
+            # Ajustar a posição para evitar a colisão
+            if dx > 0:  # Movimento para a direita
+                posX = rect.left - pacman_rect.width // 2
+            elif dx < 0:  # Movimento para a esquerda
+                posX = rect.right + pacman_rect.width // 2
+            if dy > 0:  # Movimento para baixo
+                posY = rect.top - pacman_rect.height // 2
+            elif dy < 0:  # Movimento para cima
+                posY = rect.bottom + pacman_rect.height // 2
+            break
+    return posX, posY
+
+# Loop principal do jogo com colisão no Pacman
 running = True
+dx, dy = 0, 0  # Movimento padrão
 while running:
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
+            pygame.quit()
+            sys.exit()
 
+    # Obtenha as teclas pressionadas
     keys = pygame.key.get_pressed()
-
-    if keys[pygame.K_LEFT]:
-        posX -= 12.5
-        direcao = 'e'
-        animation = player.animacao(posX, posY, direcao)
-
-    elif keys[pygame.K_RIGHT]:
-        pygame.draw.circle(screen, 'black', (posX, posY), 20)
-        posX += 12.5
-        direcao = 'd'
-        animation = player.animacao(posX, posY, direcao)
-
-    elif keys[pygame.K_UP]:
-        pygame.draw.circle(screen, 'black', (posX, posY), 20)
-        posY -= 12.5
-        direcao = 'u'
-        animation = player.animacao(posX, posY, direcao)
-
-    elif keys[pygame.K_DOWN]:
-        pygame.draw.circle(screen, 'black', (posX, posY), 20)
-        posY += 12.5
-        direcao = 'b'
-        animation = player.animacao(posX, posY, direcao)
-
     
-    draw_map(level)
-    #screen.fill(background_color)
+    # Reinicie dx e dy antes de verificar as teclas
+    dx, dy = 0, 0
 
-    # Desenha a imagem atual na tela
+    # Determine o deslocamento de acordo com a tecla pressionada
+    if keys[pygame.K_LEFT]:
+        dx = -15
+        direcao = 'e'
+    elif keys[pygame.K_RIGHT]:
+        dx = 15
+        direcao = 'd'
+    elif keys[pygame.K_UP]:
+        dy = -15
+        direcao = 'u'
+    elif keys[pygame.K_DOWN]:
+        dy = 15
+        direcao = 'b'
+
+    # Verifique e ajuste a posição do Pacman para evitar colisão
+    posX, posY = handle_collision(posX, posY, rects.rectangles, dx, dy)
+
+    # Atualize a animação de acordo com a direção
+    animation = player.animacao(posX, posY, direcao)
+
+    # Preencha a tela com a imagem de fundo
+    screen.blit(background_image, image_rect.topleft)
+    
+    # Desenhe todos os retângulos transparentes
+    for i, rect in enumerate(rects.rectangles):
+        screen.blit(transparent_surfaces[i], rect.topleft)
+
+    # Desenha a imagem atual do Pacman na tela
     current_image, current_rect = animation[frame]
     screen.blit(current_image, current_rect.topleft)
 
-    # Atualiza a tela
+    # Atualize a tela
     pygame.display.flip()
 
-    # Controla a velocidade da animação
+    # Controle a velocidade da animação
     clock.tick(animation_speed)
 
-    # Passa para a próxima imagem
+    # Avance para a próxima imagem na animação
     frame = (frame + 1) % len(animation)  # Reinicia o ciclo quando chega à última imagem
-    pygame.draw.circle(screen, 'black', (posX, posY), 20)
-
-# Encerra o pygame
-pygame.quit()
