@@ -65,6 +65,8 @@ class Pacman:
 class DrawRect:
     def __init__(self):
         # Crie uma lista de retângulos
+
+
         self.rectangles = [
             #Bloco dos quadrados da esquerda
             pygame.Rect(85, 50, 55, 40), 
@@ -74,6 +76,7 @@ class DrawRect:
             pygame.Rect(500, 50, 55, 40),
             pygame.Rect(500, 135, 55, 15), 
             pygame.Rect(375, 52, 78, 38), 
+            
             #Bordas
             pygame.Rect(312, 5, 20, 85), 
             pygame.Rect(320, 5, 290, 12), 
@@ -146,10 +149,10 @@ class DrawRect:
             
 
             # Quadrado Meio
-            pygame.Rect(250, 330, 140, 10),
+            pygame.Rect(250, 330, 142, 10),
             pygame.Rect(250, 258, 10, 72),
             pygame.Rect(250, 258, 50, 10),
-            pygame.Rect(380, 258, 10, 72),
+            pygame.Rect(382, 258, 10, 72),
             pygame.Rect(342, 258, 50, 10),
 
             # Adicione mais retângulos conforme necessário
@@ -195,7 +198,7 @@ rects = DrawRect()
 
 # Prepare superfícies transparentes para os retângulos
 transparent_surfaces = [
-    rects.create_transparent_surface(rect.width, rect.height, (255, 255, 255, 0))  # 50% de transparência
+    rects.create_transparent_surface(rect.width, rect.height, (255, 255, 255, 128))  # 50% de transparência
     for rect in rects.rectangles
 ]
 
@@ -212,30 +215,45 @@ animation_speed = 10
 frame = 0
 
 # Função para verificar colisão com retângulos e ajustar a posição do Pacman
-def handle_collision(posX, posY, rectangles, dx, dy):
+def handle_collision_and_teleport(posX, posY, rectangles, dx, dy):
     # Armazena as posições originais
     original_x, original_y = posX, posY
     posX += dx
     posY += dy
 
-    pacman_rect = pygame.Rect(posX - 12, posY - 12, 25, 25)  # Considerando a largura e altura da animação do Pacman
+    pacman_rect = pygame.Rect(posX - 12, posY - 12, 20, 25)  # Considerando a largura e altura da animação do Pacman
+    # Verifique e ajuste a posição do Pacman para evitar colisão
 
-    # Ajustar a posição se houver colisão com retângulos
-    for rect in rectangles:
-        if pacman_rect.colliderect(rect):
-            # Voltar para a posição original
-            posX, posY = original_x, original_y
-            # Ajustar a posição para evitar a colisão
-            if dx > 0:  # Movimento para a direita
-                posX = rect.left - pacman_rect.width // 2
-            elif dx < 0:  # Movimento para a esquerda
-                posX = rect.right + pacman_rect.width // 2
-            if dy > 0:  # Movimento para baixo
-                posY = rect.top - pacman_rect.height // 2
-            elif dy < 0:  # Movimento para cima
-                posY = rect.bottom + pacman_rect.height // 2
-            break
+    teleport_trigger_rect_esquerda = pygame.Rect(10, 278, 5, 45)  # Retângulo do objeto de teleporte
+    teleport_trigger_rect_direita = pygame.Rect(640, 278, 5, 45)
+
+    # Verificar se Pacman colide com os objetos de teleporte
+    if pacman_rect.colliderect(teleport_trigger_rect_esquerda):
+        # Teleportar Pacman para o lado direito
+        posX, posY = 630, 300  # Nova posição para teleporte
+    elif pacman_rect.colliderect(teleport_trigger_rect_direita):
+        # Teleportar Pacman para o lado esquerdo
+        posX, posY = 30, 300  # Nova posição para teleporte
+
+    # Ajustar a posição se houver colisão com retângulos normais
+    else:
+        for rect in rectangles:
+            if pacman_rect.colliderect(rect):
+                # Voltar para a posição original
+                posX, posY = original_x, original_y
+                # Ajustar a posição para evitar a colisão
+                if dx > 0:  # Movimento para a direita
+                    posX = rect.left - pacman_rect.width // 2
+                elif dx < 0:  # Movimento para a esquerda
+                    posX = rect.right + (pacman_rect.width + 5) // 2
+                if dy > 0:  # Movimento para baixo
+                    posY = rect.top - (pacman_rect.height + 5) // 2
+                elif dy < 0:  # Movimento para cima
+                    posY = rect.bottom + pacman_rect.height // 2
+                break
+
     return posX, posY
+
 
 # Loop principal do jogo com colisão no Pacman
 running = True
@@ -264,8 +282,9 @@ while running:
         move = 'baixo'
         
     dx,dy,direcao = player.move_pac(move)
-    # Verifique e ajuste a posição do Pacman para evitar colisão
-    posX, posY = handle_collision(posX, posY, rects.rectangles, dx, dy)
+
+
+    posX, posY = handle_collision_and_teleport(posX, posY, rects.rectangles, dx, dy)
 
     # Atualize a animação de acordo com a direção
     animation = player.animacao(posX, posY, direcao)
@@ -280,6 +299,7 @@ while running:
     # Desenha a imagem atual do Pacman na tela
     current_image, current_rect = animation[frame]
     screen.blit(current_image, current_rect.topleft)
+
 
     # Atualize a tela
     pygame.display.flip()
