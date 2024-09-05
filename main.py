@@ -62,6 +62,23 @@ class Pacman:
             pass
         return dx,dy,direcao
 
+
+class Fantasminha:
+    def __init__(self):
+        self.Fantasmas1 = pygame.image.load('assets/ghost_images/blue.png')
+        self.Fantasmas1 = pygame.transform.scale(self.Fantasmas1,(30,30))
+        self.Fantasmas2 = pygame.image.load('assets/ghost_images/red.png')
+        self.Fantasmas2 = pygame.transform.scale(self.Fantasmas2,(30,30))
+        self.Fantasmas3 = pygame.image.load('assets/ghost_images/pink.png')
+        self.Fantasmas3 = pygame.transform.scale(self.Fantasmas3,(30,30))
+        self.Fantasmas4 = pygame.image.load('assets/ghost_images/orange.png')
+        self.Fantasmas4 = pygame.transform.scale(self.Fantasmas4,(30,30))
+
+        #screen.blit(fantasma.Fantasmas1,(260,285))
+        #screen.blit(fantasma.Fantasmas2,(290,285))
+        #screen.blit(fantasma.Fantasmas3,(320,285))
+        #screen.blit(fantasma.Fantasmas4,(350,285))
+    
 class DrawRect:
     def __init__(self):
         # Crie uma lista de retângulos
@@ -69,90 +86,91 @@ class DrawRect:
 
         self.rectangles = [
             #Bloco dos quadrados da esquerda
-            pygame.Rect(85, 50, 55, 40), 
-            pygame.Rect(85, 135, 55, 18), 
-            pygame.Rect(190, 50, 75, 40), 
+            pygame.Rect(60, 50, 65, 40), 
+            pygame.Rect(60, 135, 65, 18), 
+            pygame.Rect(175, 50, 85, 40), 
+
             #Blocos dos quadrados da direita
-            pygame.Rect(500, 50, 55, 40),
-            pygame.Rect(500, 135, 55, 15), 
-            pygame.Rect(375, 52, 78, 38), 
+            pygame.Rect(520, 50, 60, 40),
+            pygame.Rect(520, 135, 60, 15), 
+            pygame.Rect(382, 52, 83, 38), 
             
             #Bordas
-            pygame.Rect(312, 5, 20, 85), 
-            pygame.Rect(320, 5, 290, 12), 
-            pygame.Rect(30, 5, 290, 12),
-            pygame.Rect(30, 5, 10, 200),
-            pygame.Rect(600, 5, 10, 200),
+            pygame.Rect(310, 0, 20, 85), 
+            pygame.Rect(320, 0, 310, 12), 
+            pygame.Rect(0, 0, 310, 12),
+            pygame.Rect(0, 0, 10, 200),
+            pygame.Rect(630, 0, 10, 200),
 
-            pygame.Rect(30, 395, 10, 240),
+            pygame.Rect(0, 395, 10, 240),
 
-            pygame.Rect(10, 320, 120, 10),
-            pygame.Rect(30, 390, 100, 10),
-            pygame.Rect(130, 321, 13, 80),
+            pygame.Rect(0, 320, 120, 10),
+            pygame.Rect(0, 390, 120, 10),
+            pygame.Rect(110, 321, 13, 80),
             
-            pygame.Rect(30, 630, 575, 10),
+            pygame.Rect(0, 630, 640, 10),
 
-            pygame.Rect(10, 268, 120, 10),
-            pygame.Rect(30, 195, 100, 10),
-            pygame.Rect(130, 195, 13, 80),
+            pygame.Rect(0, 268, 120, 10),
+            pygame.Rect(0, 195, 120, 10),
+            pygame.Rect(110, 195, 13, 80),
 
-            pygame.Rect(600, 398, 10, 235), 
+            pygame.Rect(630, 398, 10, 235), 
 
-            pygame.Rect(508, 318, 120, 10),
-            pygame.Rect(508, 392, 100, 10),
-            pygame.Rect(500, 321, 10, 80),
+            pygame.Rect(515, 318, 125, 10),
+            pygame.Rect(515, 392, 125, 10),
+            pygame.Rect(515, 321, 10, 80),
 
-            pygame.Rect(508, 269, 120, 10),
-            pygame.Rect(508, 196, 100, 10),
-            pygame.Rect(500, 198, 10, 80),
+            pygame.Rect(515, 269, 125, 10),
+            pygame.Rect(515, 196, 125, 10),
+            pygame.Rect(515, 198, 10, 80),
 
-            pygame.Rect(562, 505, 35, 20),
-            pygame.Rect(45, 505, 35, 20),
+            pygame.Rect(587, 505, 35, 20),
+            pygame.Rect(20, 505, 35, 20),
 
             #T cima
             pygame.Rect(313, 135, 15, 77),
-            pygame.Rect(252, 135, 139, 15),
+            pygame.Rect(243, 135, 155, 15),
 
-            pygame.Rect(438, 135, 15, 140),
-            pygame.Rect(375, 198, 60, 15),
+            pygame.Rect(450, 135, 15, 140),
+            pygame.Rect(380, 198, 60, 15),
 
-            pygame.Rect(189, 135, 15, 140),
-            pygame.Rect(207, 198, 60, 15),
+            pygame.Rect(176, 135, 15, 140),
+            pygame.Rect(200, 198, 60, 15),
 
             pygame.Rect(314, 384, 15, 77),
-            pygame.Rect(252, 384, 138, 15),
+            pygame.Rect(245, 384, 150, 15),
 
             pygame.Rect(314, 508, 15, 77),
-            pygame.Rect(252, 508, 138, 15),
+            pygame.Rect(245, 508, 150, 15),
 
             #Barras Meio
-            pygame.Rect(438, 321, 15, 79),
-            pygame.Rect(189, 321, 15, 79),
+            pygame.Rect(450, 321, 15, 79),
+            pygame.Rect(177, 321, 15, 79),
 
             #Barras Baixo
-            pygame.Rect(376, 447, 76, 15),
-            pygame.Rect(190, 447, 76, 15),
+            pygame.Rect(384, 447, 80, 15),
+            pygame.Rect(178, 447, 80, 15),
 
             # L baixo
-            pygame.Rect(505, 447, 50, 15),
-            pygame.Rect(500, 447, 15, 75),
+            pygame.Rect(530, 447, 50, 15),
+            pygame.Rect(520, 447, 15, 75),
 
-            pygame.Rect(88, 447, 50, 15),
-            pygame.Rect(127, 447, 15, 75),
+            pygame.Rect(60, 447, 50, 15),
+            pygame.Rect(107, 447, 15, 75),
 
             # Cacetete Baixo
-            pygame.Rect(85, 570, 180, 15),
-            pygame.Rect(189, 508, 15, 55),
+            pygame.Rect(63, 570, 195, 15),
+            pygame.Rect(175, 508, 15, 55),
 
-            pygame.Rect(375, 570, 180, 15),
-            pygame.Rect(438, 508, 15, 55),
+            pygame.Rect(382, 570, 195, 15),
+            pygame.Rect(450, 508, 15, 55),
             
 
             # Quadrado Meio
-            pygame.Rect(250, 330, 142, 10),
-            pygame.Rect(250, 258, 10, 72),
-            pygame.Rect(250, 258, 50, 10),
-            pygame.Rect(382, 258, 10, 72),
+            pygame.Rect(240, 330, 160, 10),
+            pygame.Rect(240, 258, 10, 72),
+            pygame.Rect(248, 258, 50, 10),
+            pygame.Rect(390, 258, 10, 72),
             pygame.Rect(342, 258, 50, 10),
 
             # Adicione mais retângulos conforme necessário
@@ -176,19 +194,8 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 # Carregue a imagem de fundo
 background_image = pygame.image.load('assets/map.PNG')
 
-# Obtenha as dimensões da imagem original
-original_width, original_height = background_image.get_size()
-
-# Calcule a nova dimensão mantendo a proporção
-if original_width / original_height > screen_width / screen_height:
-    new_width = screen_width
-    new_height = int(screen_width * original_height / original_width)
-else:
-    new_height = screen_height
-    new_width = int(screen_height * original_width / original_height)
-
 # Redimensione a imagem de fundo para manter a proporção
-background_image = pygame.transform.scale(background_image, (new_width, new_height))
+background_image = pygame.transform.scale(background_image, (640, 640))
 
 # Calcule a posição para centralizar a imagem
 image_rect = background_image.get_rect(center=(screen_width / 2, screen_height / 2))
@@ -203,6 +210,7 @@ transparent_surfaces = [
 ]
 
 player = Pacman()
+fantasma = Fantasminha()
 # Inicializa a posição e a direção
 posX = 640 // 2 
 posY = 640 // 2 + 40
@@ -224,16 +232,16 @@ def handle_collision_and_teleport(posX, posY, rectangles, dx, dy):
     pacman_rect = pygame.Rect(posX - 12, posY - 12, 20, 25)  # Considerando a largura e altura da animação do Pacman
     # Verifique e ajuste a posição do Pacman para evitar colisão
 
-    teleport_trigger_rect_esquerda = pygame.Rect(10, 278, 5, 45)  # Retângulo do objeto de teleporte
-    teleport_trigger_rect_direita = pygame.Rect(640, 278, 5, 45)
+    teleport_trigger_rect_esquerda = pygame.Rect(-20, 278, 5, 45)  # Retângulo do objeto de teleporte
+    teleport_trigger_rect_direita = pygame.Rect(680, 278, 5, 45)
 
     # Verificar se Pacman colide com os objetos de teleporte
     if pacman_rect.colliderect(teleport_trigger_rect_esquerda):
         # Teleportar Pacman para o lado direito
-        posX, posY = 630, 300  # Nova posição para teleporte
+        posX, posY = 640, 300  # Nova posição para teleporte
     elif pacman_rect.colliderect(teleport_trigger_rect_direita):
         # Teleportar Pacman para o lado esquerdo
-        posX, posY = 30, 300  # Nova posição para teleporte
+        posX, posY = 0, 300  # Nova posição para teleporte
 
     # Ajustar a posição se houver colisão com retângulos normais
     else:
@@ -291,7 +299,6 @@ while running:
 
     # Preencha a tela com a imagem de fundo
     screen.blit(background_image, image_rect.topleft)
-    
     # Desenhe todos os retângulos transparentes
     for i, rect in enumerate(rects.rectangles):
         screen.blit(transparent_surfaces[i], rect.topleft)
@@ -299,8 +306,10 @@ while running:
     # Desenha a imagem atual do Pacman na tela
     current_image, current_rect = animation[frame]
     screen.blit(current_image, current_rect.topleft)
-
-
+    screen.blit(fantasma.Fantasmas1,(260,285))
+    screen.blit(fantasma.Fantasmas2,(290,285))
+    screen.blit(fantasma.Fantasmas3,(320,285))
+    screen.blit(fantasma.Fantasmas4,(350,285))
     # Atualize a tela
     pygame.display.flip()
 
