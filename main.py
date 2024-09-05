@@ -39,6 +39,28 @@ class Pacman:
             image_rect.center = (posX, posY)
             animation.append((image, image_rect))
         return animation
+    def move_pac(self,move):
+        dx = 0
+        dy = 0
+        direcao = 'e'
+        if move == 'esquerda':
+            dx = -5
+            direcao = 'e'
+        elif move == 'direita':
+            move = 'direita'
+            dx = 5
+            direcao = 'd'
+        elif move == 'cima':
+            move = 'cima'
+            dy = -5
+            direcao = 'u'
+        elif move == 'baixo':
+            move = 'baixo'
+            dy = 5
+            direcao = 'b'
+        else:
+            pass
+        return dx,dy,direcao
 
 class DrawRect:
     def __init__(self):
@@ -218,6 +240,7 @@ def handle_collision(posX, posY, rectangles, dx, dy):
 # Loop principal do jogo com colisão no Pacman
 running = True
 dx, dy = 0, 0  # Movimento padrão
+move = None
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -232,18 +255,15 @@ while running:
 
     # Determine o deslocamento de acordo com a tecla pressionada
     if keys[pygame.K_LEFT]:
-        dx = -15
-        direcao = 'e'
+        move = 'esquerda'      
     elif keys[pygame.K_RIGHT]:
-        dx = 15
-        direcao = 'd'
+        move = 'direita'
     elif keys[pygame.K_UP]:
-        dy = -15
-        direcao = 'u'
+        move = 'cima'
     elif keys[pygame.K_DOWN]:
-        dy = 15
-        direcao = 'b'
-
+        move = 'baixo'
+        
+    dx,dy,direcao = player.move_pac(move)
     # Verifique e ajuste a posição do Pacman para evitar colisão
     posX, posY = handle_collision(posX, posY, rects.rectangles, dx, dy)
 
