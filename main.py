@@ -1,7 +1,7 @@
 import pygame
 import sys
 import os
-
+import comidinha
 
 # Classe que controla o PAC
 class Pacman:
@@ -205,7 +205,7 @@ rects = DrawRect()
 
 # Prepare superfícies transparentes para os retângulos
 transparent_surfaces = [
-    rects.create_transparent_surface(rect.width, rect.height, (255, 255, 255, 128))  # 50% de transparência
+    rects.create_transparent_surface(rect.width, rect.height, (255, 255, 255, 0))  # 50% de transparência
     for rect in rects.rectangles
 ]
 
@@ -219,7 +219,7 @@ direcao = 'd'  # Direção inicial
 # Inicializa a animação
 animation = player.init_animacao(posX, posY)
 clock = pygame.time.Clock()
-animation_speed = 10
+animation_speed = 25
 frame = 0
 
 # Função para verificar colisão com retângulos e ajustar a posição do Pacman
@@ -310,6 +310,11 @@ while running:
     screen.blit(fantasma.Fantasmas2,(290,285))
     screen.blit(fantasma.Fantasmas3,(320,285))
     screen.blit(fantasma.Fantasmas4,(350,285))
+
+        # Desenha todos os círculos da lista
+    for circle in comidinha.circles:
+        position, radius, width = circle
+        pygame.draw.circle(screen, (255,255,255), position, radius, width)
     # Atualize a tela
     pygame.display.flip()
 
