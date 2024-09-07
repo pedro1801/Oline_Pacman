@@ -2,7 +2,7 @@ import pygame
 import sys
 import os
 import comidinha
-
+import math
 # Classe que controla o PAC
 class Pacman:
     def __init__(self):
@@ -183,6 +183,26 @@ class DrawRect:
         surface.fill(color)
         return surface
 
+
+player = Pacman()
+fantasma = Fantasminha()
+circulos = comidinha.circles
+circulos_colidios = []
+# Inicializa a posição e a direção
+posX = 640 // 2 
+posY = 640 // 2 + 40
+direcao = 'd'  # Direção inicial
+
+# Inicializa a animação
+animation = player.init_animacao(posX, posY)
+clock = pygame.time.Clock()
+animation_speed = 25
+frame = 0
+
+dx, dy = 0, 0  # Movimento padrão
+move = None
+click_points = []
+checkpoints = []
 # Inicialize o Pygame
 pygame.init()
 
@@ -209,29 +229,28 @@ transparent_surfaces = [
     for rect in rects.rectangles
 ]
 
-player = Pacman()
-fantasma = Fantasminha()
-# Inicializa a posição e a direção
-posX = 640 // 2 
-posY = 640 // 2 + 40
-direcao = 'd'  # Direção inicial
 
-# Inicializa a animação
-animation = player.init_animacao(posX, posY)
-clock = pygame.time.Clock()
-animation_speed = 25
-frame = 0
+def distancia(p1, p2):
+    """Calcula a distância euclidiana entre dois pontos."""
+    return math.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
 
+def colisao_circulo(circulos, pacman_rect):
+    """Verifica se o Pacman colide com algum dos círculos e retorna o círculo colidido."""
+    for circulo in circulos:
+        (cx, cy), raio, _ = circulo
+        if distancia((cx, cy), (pacman_rect.centerx, pacman_rect.centery )) < raio + max(pacman_rect.width - 10 , pacman_rect.height - 10 ) // 2:
+            return circulo
+    return None
 # Função para verificar colisão com retângulos e ajustar a posição do Pacman
-def handle_collision_and_teleport(posX, posY, rectangles, dx, dy):
+def handle_collision_and_teleport(posX, posY, rectangles, circulos, dx, dy):
     # Armazena as posições originais
     original_x, original_y = posX, posY
     posX += dx
     posY += dy
 
     pacman_rect = pygame.Rect(posX - 12, posY - 12, 20, 25)  # Considerando a largura e altura da animação do Pacman
-    # Verifique e ajuste a posição do Pacman para evitar colisão
 
+    # Retângulos dos objetos de teleporte
     teleport_trigger_rect_esquerda = pygame.Rect(-20, 278, 5, 45)  # Retângulo do objeto de teleporte
     teleport_trigger_rect_direita = pygame.Rect(680, 278, 5, 45)
 
@@ -242,8 +261,6 @@ def handle_collision_and_teleport(posX, posY, rectangles, dx, dy):
     elif pacman_rect.colliderect(teleport_trigger_rect_direita):
         # Teleportar Pacman para o lado esquerdo
         posX, posY = 0, 300  # Nova posição para teleporte
-
-    # Ajustar a posição se houver colisão com retângulos normais
     else:
         for rect in rectangles:
             if pacman_rect.colliderect(rect):
@@ -260,18 +277,32 @@ def handle_collision_and_teleport(posX, posY, rectangles, dx, dy):
                     posY = rect.bottom + pacman_rect.height // 2
                 break
 
-    return posX, posY
+            # Verificar colisão com círculos
+    colidado = colisao_circulo(circulos, pacman_rect)
+    
+    return posX, posY, colidado
 
-
+# Função para desenhar a reta entre dois pontos
+def desenha_reta(screen, start, end):
+    pygame.draw.line(screen, (255,255,255), start, end, 2)  # 2 é a espessura da linha
 # Loop principal do jogo com colisão no Pacman
 running = True
-dx, dy = 0, 0  # Movimento padrão
-move = None
 while running:
+    screen.blit(background_image, image_rect.topleft) 
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            print(checkpoints)
             pygame.quit()
             sys.exit()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            click_points.append(event.pos)
+            # Se houver dois pontos, desenha a reta
+            if len(click_points) % 2 == 0:
+               # pygame.draw.line(screen, (255,255,255), click_points[0], click_points[1], 2)
+                checkpoints.append(tuple(click_points))
+                click_points = []
+
 
     # Obtenha as teclas pressionadas
     keys = pygame.key.get_pressed()
@@ -292,13 +323,20 @@ while running:
     dx,dy,direcao = player.move_pac(move)
 
 
-    posX, posY = handle_collision_and_teleport(posX, posY, rects.rectangles, dx, dy)
-
+    posX, posY ,comida = handle_collision_and_teleport(posX, posY, rects.rectangles,circulos, dx, dy)
+    if comida not in circulos_colidios:
+        circulos_colidios.append(comida)
     # Atualize a animação de acordo com a direção
+    for circle in circulos:
+        if circle in circulos_colidios:
+            position, radius, width = circle
+            pygame.draw.circle(screen, (0,0,0), position, radius, width)
+        else:
+            position, radius, width = circle
+            pygame.draw.circle(screen, (255,255,255), position, radius, width)
     animation = player.animacao(posX, posY, direcao)
 
-    # Preencha a tela com a imagem de fundo
-    screen.blit(background_image, image_rect.topleft)
+
     # Desenhe todos os retângulos transparentes
     for i, rect in enumerate(rects.rectangles):
         screen.blit(transparent_surfaces[i], rect.topleft)
@@ -312,9 +350,14 @@ while running:
     screen.blit(fantasma.Fantasmas4,(350,285))
 
         # Desenha todos os círculos da lista
-    for circle in comidinha.circles:
-        position, radius, width = circle
-        pygame.draw.circle(screen, (255,255,255), position, radius, width)
+
+    # Desenha todas as retas da lista
+    for reta in checkpoints:
+        start, end = reta
+        pygame.draw.line(screen, (255, 255, 255), start, end, 2)  # 2 é a espessura da linha
+    #for reta in comidinha.reta_pares:
+    #    start, end = reta
+    #    pygame.draw.line(screen, (255, 255, 255), start, end, 2)  # 2 é a espessura da linha             
     # Atualize a tela
     pygame.display.flip()
 
