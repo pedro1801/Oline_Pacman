@@ -65,7 +65,7 @@ class Pacman:
             pass
         return dx,dy,direcao
 
-
+# Classe para controle dos Fantasmas
 class Fantasminha:
     def __init__(self):
         self.Fantasmas1 = pygame.image.load('assets/ghost_images/blue.png')
@@ -249,9 +249,7 @@ class Fantasminha:
                         self.qtdCaminhoanterior4+=1
                         self.qtdCaminhoposterior4+=1
                     self.initFantasma4 = (self.start4,self.end4)
-                    
-   
-    
+                        
 class DrawRect:
     def __init__(self):
         # Crie uma lista de retângulos
@@ -356,6 +354,7 @@ class DrawRect:
 
 
 player = Pacman()
+
 fantasma = Fantasminha()
 circulos = comidinha.circles
 circulos_colidios = []
@@ -439,13 +438,13 @@ def handle_collision_and_teleport(posX, posY, rectangles, circulos, dx, dy):
                 posX, posY = original_x, original_y
                 # Ajustar a posição para evitar a colisão
                 if dx > 0:  # Movimento para a direita
-                    posX = rect.left - pacman_rect.width // 2
+                    posX = rect.left - (pacman_rect.width + 5) // 2
                 elif dx < 0:  # Movimento para a esquerda
                     posX = rect.right + (pacman_rect.width + 5) // 2
                 if dy > 0:  # Movimento para baixo
                     posY = rect.top - (pacman_rect.height + 5) // 2
                 elif dy < 0:  # Movimento para cima
-                    posY = rect.bottom + pacman_rect.height // 2
+                    posY = rect.bottom + (pacman_rect.height + 5) // 2
                 break
 
             # Verificar colisão com círculos
@@ -453,12 +452,28 @@ def handle_collision_and_teleport(posX, posY, rectangles, circulos, dx, dy):
     
     return posX, posY, colidado
 
+def ghost_collision(move,playerPos,ghostPos1,ghostPos2,ghostPos3,ghostPos4):
+        pacman_rect = pygame.Rect(playerPos[0] - 12, playerPos[1] - 12, 20, 25)
+        ghost_rect1 = pygame.Rect(ghostPos1[0] - 12, ghostPos1[1] - 12, 20, 25)
+        ghost_rect2 = pygame.Rect(ghostPos2[0] - 12, ghostPos2[1] - 12, 20, 25)
+        ghost_rect3 = pygame.Rect(ghostPos3[0] - 12, ghostPos3[1] - 12, 20, 25)
+        ghost_rect4 = pygame.Rect(ghostPos4[0] - 12, ghostPos4[1] - 12, 20, 25)
+        if pacman_rect.colliderect(ghost_rect1) or pacman_rect.colliderect(ghost_rect2) or pacman_rect.colliderect(ghost_rect3) or pacman_rect.colliderect(ghost_rect4):
+            print('morto')
+            return 640 // 2 ,640 // 2 + 40, False
+        else:
+            return posX, posY, move
 # Função para desenhar a reta entre dois pontos
 def desenha_reta(screen, start, end):
     pygame.draw.line(screen, (255,255,255), start, end, 2)  # 2 é a espessura da linha
 # Loop principal do jogo com colisão no Pacman
 running = True
 while running:
+
+    if len(comidinha.circles)+1 == len(circulos_colidios):
+        print('PARABENS')
+        break
+
     screen.blit(background_image, image_rect.topleft) 
 
     for event in pygame.event.get():
@@ -509,12 +524,14 @@ while running:
         else:
             position, radius, width = circle
             pygame.draw.circle(screen, (255,255,255), position, radius, width)
+    posX, posY, move = ghost_collision(move,(posX,posY),fantasma.initFantasma1,fantasma.initFantasma2,fantasma.initFantasma3,fantasma.initFantasma4)
+
     animation = player.animacao(posX, posY, direcao)
 
 
     # Desenhe todos os retângulos transparentes
-    #for i, rect in enumerate(rects.rectangles):
-    #    screen.blit(transparent_surfaces[i], rect.topleft)
+    for i, rect in enumerate(rects.rectangles):
+        screen.blit(transparent_surfaces[i], rect.topleft)
 
     # Desenha a imagem atual do Pacman na tela
     current_image, current_rect = animation[frame]
@@ -526,16 +543,16 @@ while running:
     screen.blit(fantasma.Fantasmas3,(fantasma.initFantasma3[0]-15,fantasma.initFantasma3[1]-15))
     screen.blit(fantasma.Fantasmas4,(fantasma.initFantasma4[0]-15,fantasma.initFantasma4[1]-15))
 
-        # Desenha todos os círculos da lista
+ 
+
 
     # Desenha todas as retas da lista
-
     #for reta in comidinha.reta_pares:
     #    start, end = reta
     #    pygame.draw.line(screen, (255, 255, 255), start, end, 2)  # 2 é a espessura da linha        
-    #for reta in checkpoints:
-    #    start, end = reta
-    #    pygame.draw.line(screen, (255, 0, 0), start, end, 2)  # 2 é a espessura da linha     
+    for reta in checkpoints:
+        start, end = reta
+        pygame.draw.line(screen, (255, 0, 0), start, end, 2)  # 2 é a espessura da linha     
     # Atualize a tela
     pygame.display.flip()
 
