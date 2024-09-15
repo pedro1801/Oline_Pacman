@@ -22,14 +22,12 @@ class clienteserver:
                 self.oponeteposX = int(vetor[0])
                 self.oponeteposY = int(vetor[1])
                 self.oponetedirecao = vetor[2] 
-
+                print('valor')
         self.oponeteposX = 320
         self.oponeteposY = 360
         self.oponetedirecao = 'e'        
-        
-        self.local_ip = socket.gethostbyname(socket.gethostname())
-        
-        self.client = mqtt.Client(client_id="Pedro")
+        self.local_ip = '192.168.1.102'
+        self.client = mqtt.Client(client_id="Joao")
 
         self.client.on_connect = on_connect
         self.client.on_message = on_message
@@ -43,35 +41,29 @@ class clienteserver:
     def playersPos(self,posX,posY,direcao):
         msg = f'{posX}:{posY}:{direcao}:playersPos:{self.local_ip}'
         self.client.publish('ServerPac',msg)
-        
+
+
     def saveIP(self):
         msg = f'SaveIP:{self.local_ip}'
         self.client.publish("ServerPac", msg)
-    
-    def saveTime(self,tempo):
-        msg = f'{tempo}:saveTime:{self.local_ip}'
-        self.client.publish("ServerPac",msg)
+
 
 # Classe que controla o PAC
 class Pacman:
     def __init__(self):
         self.animationpacman = []
-        self.path_imgpac = 'assets/player_images'
-        self.path_dir = os.listdir(self.path_imgpac)
+        self.path_imgpac = 'assets/player_images/orange'
+        self.imgsdir = os.listdir(self.path_imgpac)
         self.get_animation()
 
     def get_animation(self):
-        for path in self.path_dir:
-            imgs_path = os.path.join(self.path_imgpac,path) 
-            lista = []
-            for img_file in os.listdir(imgs_path):
-                img_path = os.path.join(imgs_path,img_file)
-                lista.append(pygame.transform.scale(pygame.image.load(img_path), (40, 40)))
-            self.animationpacman.append(lista)
-                      
-    def animacao(self, posX, posY, direcao,animations):
+        for img_file in self.imgsdir:
+            img_path = os.path.join(self.path_imgpac, img_file)
+            self.animationpacman.append(pygame.transform.scale(pygame.image.load(img_path), (40, 40)))
+
+    def animacao(self, posX, posY, direcao):
         animation = []
-        for i, image in enumerate(animations):
+        for i, image in enumerate(self.animationpacman):
             image_rect = image.get_rect()
             image_rect.center = (posX, posY)
             if direcao == 'e':
@@ -85,14 +77,13 @@ class Pacman:
             animation.append((image, image_rect))
         return animation
 
-    def init_animacao(self, posX, posY,animations):
+    def init_animacao(self, posX, posY):
         animation = []
-        for i, image in enumerate(animations):
+        for i, image in enumerate(self.animationpacman):
             image_rect = image.get_rect()
             image_rect.center = (posX, posY)
             animation.append((image, image_rect))
         return animation
-    
     def move_pac(self,move):
         dx = 0
         dy = 0
@@ -408,6 +399,8 @@ client = clienteserver()
 client.saveIP()
 player = Pacman()
 
+player2 = Pacman()
+
 fantasma = Fantasminha()
 circulos = comidinha.circles
 circulos_colidios = []
@@ -417,8 +410,8 @@ posY = 640 // 2 + 40
 direcao = 'd'  # Direção inicial
 
 # Inicializa a animação
-animation = player.init_animacao(posX, posY,player.animationpacman[0])
-animation2 = player.init_animacao(client.oponeteposX,client.oponeteposY,player.animationpacman[1])
+animation = player.init_animacao(posX, posY)
+animation2 = player2.init_animacao(client.oponeteposX,client.oponeteposY)
 
 clock = pygame.time.Clock()
 animation_speed = 25
@@ -428,10 +421,9 @@ dx, dy = 0, 0  # Movimento padrão
 move = None
 click_points = []
 checkpoints = []
-
 # Inicialize o Pygame
 pygame.init()
-pygame.display.set_caption("Main")
+pygame.display.set_caption("Main1")
 
 # Defina o tamanho da tela
 screen_width = 640
@@ -526,13 +518,13 @@ def desenha_reta(screen, start, end):
 running = True
 checktime = True
 while running:
+    
     if checktime and move != None:
         start_time = time.time()
         checktime = False
         
     if len(comidinha.circles)+1 == len(circulos_colidios):
         end_time = time.time()
-        tempo = int(end_time-start_time)/60
         break
 
     screen.blit(background_image, image_rect.topleft) 
@@ -587,9 +579,8 @@ while running:
             pygame.draw.circle(screen, (255,255,255), position, radius, width)
     posX, posY, move = ghost_collision(move,(posX,posY),fantasma.initFantasma1,fantasma.initFantasma2,fantasma.initFantasma3,fantasma.initFantasma4)
 
-    animation = player.animacao(posX, posY, direcao,player.animationpacman[0])
-    
-    animation2 = player.animacao(client.oponeteposX,client.oponeteposY,client.oponetedirecao,player.animationpacman[1])
+    animation = player.animacao(posX, posY, direcao)
+    animation2 = player2.animacao(client.oponeteposX,client.oponeteposY,client.oponetedirecao)
 
     client.playersPos(posX,posY,direcao)
 
@@ -600,17 +591,13 @@ while running:
     # Desenha a imagem atual do Pacman na tela
     current_image, current_rect = animation[frame]
     screen.blit(current_image, current_rect.topleft)
-    
-    current_image, current_rect = animation2[frame]
-    screen.blit(current_image, current_rect.topleft)
+    current_image2, current_rect2 = animation2[frame]
+    screen.blit(current_image2, current_rect2.topleft)
     
     screen.blit(fantasma.Fantasmas1,(fantasma.initFantasma1[0]-15,fantasma.initFantasma1[1]-15))
     screen.blit(fantasma.Fantasmas2,(fantasma.initFantasma2[0]-15,fantasma.initFantasma2[1]-15))
     screen.blit(fantasma.Fantasmas3,(fantasma.initFantasma3[0]-15,fantasma.initFantasma3[1]-15))
     screen.blit(fantasma.Fantasmas4,(fantasma.initFantasma4[0]-15,fantasma.initFantasma4[1]-15))
-
- 
-
 
     # Desenha todas as retas da lista
     #for reta in comidinha.reta_pares:

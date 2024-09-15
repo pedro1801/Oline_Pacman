@@ -1,93 +1,75 @@
-import networkx as nx
-import matplotlib.pyplot as plt
-import random
+import pygame
+import sys
 
-# Define as retas (pares de pontos)
-reta_pares = [
-               ((30, 25), (145, 25)) , ((145, 25), (30, 25)) , ((30, 25), (30, 105)) ,
-               ((30, 105), (30, 25)) , ((30, 105), (145, 105)) , ((145, 105), (30, 105)) ,     
-               ((145, 105), (145, 25)) , ((145, 25), (145, 105)) , ((30, 105), (30, 175)) ,    
-               ((30, 175), (30, 105)) , ((30, 175), (145, 175)) , ((145, 175), (30, 175)) ,    
-               ((145, 175), (145, 105)) , ((145, 105), (145, 175)) , ((145, 105), (210, 105)) ,
-               ((210, 105), (145, 105)) , ((145, 25), (290, 25)) , ((290, 25), (145, 25)) ,    
-               ((290, 25), (290, 105)) , ((290, 105), (290, 25)) , ((290, 105), (210, 105)) ,  
-               ((210, 105), (290, 105)) , ((290, 105), (350, 105)) , ((350, 105), (290, 105)) ,
-               ((350, 105), (350, 25)) , ((350, 25), (350, 105)) , ((350, 105), (490, 105)) ,  
-               ((490, 105), (350, 105)) , ((350, 25), (490, 25)) , ((490, 25), (350, 25)) ,    
-               ((490, 25), (605, 25)) , ((605, 25), (490, 25)) , ((490, 25), (490, 105)) ,     
-               ((490, 105), (490, 25)) , ((605, 25), (605, 105)) , ((605, 105), (605, 25)) ,   
-               ((605, 105), (490, 105)) , ((490, 105), (605, 105)) , ((490, 105), (490, 175)) ,
-               ((490, 175), (490, 105)) , ((490, 175), (605, 175)) , ((605, 175), (490, 175)) ,
-               ((605, 175), (605, 105)) , ((605, 105), (605, 175)) , ((210, 105), (210, 180)) ,
-               ((210, 180), (210, 105)) , ((210, 180), (290, 180)) , ((290, 180), (210, 180)) ,
-               ((290, 180), (290, 230)) , ((290, 230), (290, 180)) , ((290, 230), (320, 230)) ,
-               ((320, 230), (290, 230)) , ((350, 230), (320, 230)) , ((320, 230), (350, 230)) ,
-               ((350, 230), (350, 180)) , ((350, 180), (350, 230)) , ((350, 180), (430, 180)) ,
-               ((430, 180), (355, 180)) , ((430, 180), (430, 105)) , ((430, 105), (430, 180)) ,
-               ((320, 230), (320, 295)) , ((320, 295), (335, 295)) , ((335, 295), (365, 295)) ,
-               ((320, 295), (305, 295)) , ((320, 295), (275, 295)) , ((350, 230), (430, 230)) ,
-               ((430, 230), (350, 230)) , ((430, 230), (430, 295)) , ((430, 295), (430, 230)) ,
-               ((430, 295), (490, 295)) , ((490, 295), (430, 295)) , ((430, 295), (430, 360)) ,
-               ((430, 360), (430, 295)) , ((490, 175), (490, 295)) , ((490, 295), (490, 175)) ,
-               ((490, 295), (490, 420)) , ((490, 420), (490, 295)) , ((430, 360), (430, 420)) ,
-               ((430, 420), (430, 360)) , ((430, 360), (210, 360)) , ((210, 360), (430, 360)) ,
-               ((210, 360), (210, 230)) , ((210, 230), (210, 360)) , ((210, 230), (290, 230)) ,
-               ((290, 230), (210, 230)) , ((210, 360), (210, 420)) , ((210, 420), (210, 360)) ,
-               ((210, 420), (295, 420)) , ((295, 420), (210, 420)) , ((295, 420), (295, 485)) ,
-               ((295, 485), (295, 420)) , ((210, 420), (145, 420)) , ((145, 420), (210, 420)) ,
-               ((145, 420), (145, 485)) , ((145, 485), (145, 420)) , ((145, 485), (295, 485)) ,
-               ((295, 485), (145, 485)) , ((295, 485), (345, 485)) , ((345, 485), (295, 485)) ,
-               ((345, 485), (345, 420)) , ((345, 420), (345, 485)) , ((345, 420), (430, 420)) ,
-               ((430, 420), (345, 420)) , ((345, 485), (430, 485)) , ((430, 485), (345, 485)) ,
-               ((430, 485), (430, 550)) , ((430, 550), (430, 485)) , ((430, 485), (490, 485)) ,
-               ((490, 485), (430, 485)) , ((430, 420), (490, 420)) , ((490, 420), (430, 420)) ,
-               ((145, 295), (210, 295)) , ((210, 295), (145, 295)) , ((145, 175), (145, 295)) ,
-               ((145, 295), (145, 175)) , ((145, 295), (145, 420)) , ((145, 420), (145, 295)) ,
-               ((145, 420), (30, 420)) , ((30, 420), (145, 420)) , ((30, 420), (30, 485)) ,
-               ((30, 485), (30, 420)) , ((30, 485), (90, 485)) , ((90, 485), (30, 485)) ,
-               ((90, 485), (90, 545)) , ((90, 545), (90, 485)) , ((90, 545), (40, 545)) ,
-               ((40, 545), (90, 545)) , ((40, 545), (40, 615)) , ((40, 615), (40, 550)) ,
-               ((40, 615), (280, 615)) , ((280, 615), (40, 615)) , ((280, 615), (280, 550)) ,
-               ((280, 550), (280, 615)) , ((280, 550), (210, 550)) , ((210, 550), (280, 550)) ,
-               ((210, 550), (210, 485)) , ((210, 485), (210, 550)) , ((145, 485), (145, 545)) ,
-               ((145, 545), (145, 490)) , ((145, 545), (90, 545)) , ((90, 545), (145, 545)) ,
-               ((360, 550), (360, 615)) , ((360, 615), (360, 550)) , ((360, 550), (430, 550)) ,
-               ((430, 550), (360, 550)) , ((280, 615), (360, 615)) , ((360, 615), (280, 615)) ,
-               ((360, 615), (595, 615)) , ((595, 615), (360, 615)) , ((595, 615), (595, 545)) ,
-               ((595, 545), (595, 615)) , ((595, 545), (490, 545)) , ((490, 545), (595, 545)) ,
-               ((550, 545), (550, 485)) , ((550, 485), (550, 545)) , ((550, 485), (605, 485)) ,
-               ((605, 485), (550, 485)) , ((605, 485), (605, 420)) , ((605, 420), (605, 485)) ,
-               ((605, 420), (490, 420)) , ((490, 420), (605, 420)) , ((490, 420), (490, 545)) ,
-               ((490, 545), (490, 420)) ,
-             ]
+# Inicializa o Pygame
+pygame.init()
 
-# Cria o grafo
-G = nx.Graph()
+# Configura a tela
+screen = pygame.display.set_mode((800, 600))
+pygame.display.set_caption("Exemplo de Pop-up")
 
-# Adiciona as arestas (linhas entre os pontos)
-for (p1, p2) in reta_pares:
-    G.add_edge(p1, p2)
+# Define cores
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+GRAY = (200, 200, 200)
 
-# Definir os pontos de origem e destino
+# Função para desenhar o pop-up
+def draw_popup(screen, message):
+    # Dimensões do pop-up
+    popup_width = 400
+    popup_height = 200
 
-start = reta_pares[random.randint(0,len(reta_pares))][0]
-end = reta_pares[random.randint(0,len(reta_pares))][0]
-print(start)
-print(end)
-# Encontrar o caminho mais curto entre dois pontos (BFS)
-try:
-    caminho = nx.shortest_path(G, source=start, target=end)
-    print(f"Caminho encontrado: {caminho}")
-except nx.NetworkXNoPath:
-    print(f"Não existe caminho entre {start} e {end}")
+    # Calcula a posição central do pop-up
+    popup_x = (screen.get_width() - popup_width) // 2
+    popup_y = (screen.get_height() - popup_height) // 2
 
-# Desenhar o grafo
-print(caminho)
-pos = {node: node for node in G.nodes()}  # As posições dos nós são as coordenadas dos pontos
-nx.draw(G, pos, with_labels=True, node_size=50, font_size=8)
+    # Desenha um retângulo para o pop-up
+    pygame.draw.rect(screen, GRAY, (popup_x, popup_y, popup_width, popup_height))
+    pygame.draw.rect(screen, BLACK, (popup_x, popup_y, popup_width, popup_height), 5)
 
-# Destacar o caminho encontrado
-path_edges = list(zip(caminho, caminho[1:]))
-nx.draw_networkx_edges(G, pos, edgelist=path_edges, edge_color='r', width=2)  # Arestas do caminho em vermelho
+    # Fonte para o texto
+    font = pygame.font.SysFont(None, 36)
 
-plt.show()
+    # Renderiza o texto
+    text = font.render(message, True, BLACK)
+    
+    # Centraliza o texto no pop-up
+    text_rect = text.get_rect(center=(popup_x + popup_width // 2, popup_y + popup_height // 2))
+    screen.blit(text, text_rect)
+
+    # Botão de "OK"
+    button_rect = pygame.Rect(popup_x + popup_width // 2 - 50, popup_y + popup_height - 60, 100, 40)
+    pygame.draw.rect(screen, WHITE, button_rect)
+    pygame.draw.rect(screen, BLACK, button_rect, 3)
+    
+    button_text = font.render("OK", True, BLACK)
+    button_text_rect = button_text.get_rect(center=button_rect.center)
+    screen.blit(button_text, button_text_rect)
+
+    return button_rect
+
+# Loop principal
+running = True
+popup_active = True
+while running:
+    screen.fill(WHITE)
+
+    # Se o pop-up está ativo, desenhá-lo
+    if popup_active:
+        button_rect = draw_popup(screen, "Este é um pop-up!")
+    
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        
+        if event.type == pygame.MOUSEBUTTONDOWN and popup_active:
+            # Verifica se o botão "OK" foi clicado
+            if button_rect.collidepoint(event.pos):
+                popup_active = False
+
+    # Atualiza a tela
+    pygame.display.flip()
+
+# Encerra o Pygame
+pygame.quit()
+sys.exit()
