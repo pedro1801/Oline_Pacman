@@ -18,15 +18,22 @@ class clienteserver:
             client.subscribe(self.local_ip)
         def on_message(client, userdata, msg):
             vetor = msg.payload.decode().split(':')
-            if len(vetor) == 3:
+            if vetor[-1] == 'checkPos':
                 self.oponeteposX = int(vetor[0])
                 self.oponeteposY = int(vetor[1])
                 self.oponetedirecao = vetor[2] 
-                print('valor')
+            elif vetor[-1] == 'endGame':
+                print(vetor)
+                print('Cria PopUp')
+            if msg.payload.decode() == 'StartGame':
+                self.startGame = True
+        self.startGame = False
         self.oponeteposX = 320
         self.oponeteposY = 360
         self.oponetedirecao = 'e'        
+        
         self.local_ip = '192.168.1.102'
+        
         self.client = mqtt.Client(client_id="Joao")
 
         self.client.on_connect = on_connect
@@ -41,29 +48,35 @@ class clienteserver:
     def playersPos(self,posX,posY,direcao):
         msg = f'{posX}:{posY}:{direcao}:playersPos:{self.local_ip}'
         self.client.publish('ServerPac',msg)
-
-
+        
     def saveIP(self):
         msg = f'SaveIP:{self.local_ip}'
         self.client.publish("ServerPac", msg)
-
+    
+    def saveTime(self,tempo):
+        msg = f'{tempo}:saveTime:{self.local_ip}'
+        self.client.publish("ServerPac",msg)
 
 # Classe que controla o PAC
 class Pacman:
     def __init__(self):
         self.animationpacman = []
-        self.path_imgpac = 'assets/player_images/orange'
-        self.imgsdir = os.listdir(self.path_imgpac)
+        self.path_imgpac = 'assets/player_images'
+        self.path_dir = os.listdir(self.path_imgpac)
         self.get_animation()
 
     def get_animation(self):
-        for img_file in self.imgsdir:
-            img_path = os.path.join(self.path_imgpac, img_file)
-            self.animationpacman.append(pygame.transform.scale(pygame.image.load(img_path), (40, 40)))
-
-    def animacao(self, posX, posY, direcao):
+        for path in self.path_dir:
+            imgs_path = os.path.join(self.path_imgpac,path) 
+            lista = []
+            for img_file in os.listdir(imgs_path):
+                img_path = os.path.join(imgs_path,img_file)
+                lista.append(pygame.transform.scale(pygame.image.load(img_path), (40, 40)))
+            self.animationpacman.append(lista)
+                      
+    def animacao(self, posX, posY, direcao,animations):
         animation = []
-        for i, image in enumerate(self.animationpacman):
+        for i, image in enumerate(animations):
             image_rect = image.get_rect()
             image_rect.center = (posX, posY)
             if direcao == 'e':
@@ -77,13 +90,14 @@ class Pacman:
             animation.append((image, image_rect))
         return animation
 
-    def init_animacao(self, posX, posY):
+    def init_animacao(self, posX, posY,animations):
         animation = []
-        for i, image in enumerate(self.animationpacman):
+        for i, image in enumerate(animations):
             image_rect = image.get_rect()
             image_rect.center = (posX, posY)
             animation.append((image, image_rect))
         return animation
+    
     def move_pac(self,move):
         dx = 0
         dy = 0
@@ -106,7 +120,6 @@ class Pacman:
         else:
             pass
         return dx,dy,direcao
-
 # Classe para controle dos Fantasmas
 class Fantasminha:
     def __init__(self):
@@ -399,28 +412,31 @@ client = clienteserver()
 client.saveIP()
 player = Pacman()
 
-player2 = Pacman()
-
 fantasma = Fantasminha()
 circulos = comidinha.circles
 circulos_colidios = []
 # Inicializa a posição e a direção
 posX = 640 // 2 
 posY = 640 // 2 + 40
+
 direcao = 'd'  # Direção inicial
 
 # Inicializa a animação
-animation = player.init_animacao(posX, posY)
-animation2 = player2.init_animacao(client.oponeteposX,client.oponeteposY)
+animation = player.init_animacao(posX, posY,player.animationpacman[0])
+
+animation2 = player.init_animacao(client.oponeteposX,client.oponeteposY,player.animationpacman[1])
 
 clock = pygame.time.Clock()
+
 animation_speed = 25
+
 frame = 0
 
 dx, dy = 0, 0  # Movimento padrão
 move = None
 click_points = []
 checkpoints = []
+
 # Inicialize o Pygame
 pygame.init()
 pygame.display.set_caption("Main1")
@@ -448,7 +464,6 @@ transparent_surfaces = [
     for rect in rects.rectangles
 ]
 
-
 def distancia(p1, p2):
     """Calcula a distância euclidiana entre dois pontos."""
     return math.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
@@ -460,6 +475,7 @@ def colisao_circulo(circulos, pacman_rect):
         if distancia((cx, cy), (pacman_rect.centerx, pacman_rect.centery )) < raio + max(pacman_rect.width - 10 , pacman_rect.height - 10 ) // 2:
             return circulo
     return None
+
 # Função para verificar colisão com retângulos e ajustar a posição do Pacman
 def handle_collision_and_teleport(posX, posY, rectangles, circulos, dx, dy):
     # Armazena as posições originais
@@ -518,14 +534,20 @@ def desenha_reta(screen, start, end):
 running = True
 checktime = True
 while running:
-    
     if checktime and move != None:
         start_time = time.time()
         checktime = False
         
-    if len(comidinha.circles)+1 == len(circulos_colidios):
+    if 5 == len(circulos_colidios):
         end_time = time.time()
-        break
+        tempo = int(end_time-start_time)
+        client.saveTime(tempo)
+        move = None
+        client.startGame = False
+        posX = 640 // 2 
+        posY = 640 // 2 + 40
+        direcao = 'd'  # Direção inicial
+        circulos_colidios = []
 
     screen.blit(background_image, image_rect.topleft) 
 
@@ -550,14 +572,15 @@ while running:
     dx, dy = 0, 0
 
     # Determine o deslocamento de acordo com a tecla pressionada
-    if keys[pygame.K_LEFT]:
-        move = 'esquerda'      
-    elif keys[pygame.K_RIGHT]:
-        move = 'direita'
-    elif keys[pygame.K_UP]:
-        move = 'cima'
-    elif keys[pygame.K_DOWN]:
-        move = 'baixo'
+    if client.startGame:
+        if keys[pygame.K_LEFT]:
+            move = 'esquerda'      
+        elif keys[pygame.K_RIGHT]:
+            move = 'direita'
+        elif keys[pygame.K_UP]:
+            move = 'cima'
+        elif keys[pygame.K_DOWN]:
+            move = 'baixo'
         
     dx,dy,direcao = player.move_pac(move)
     fantasma.Ghostmovement1(move)
@@ -579,8 +602,9 @@ while running:
             pygame.draw.circle(screen, (255,255,255), position, radius, width)
     posX, posY, move = ghost_collision(move,(posX,posY),fantasma.initFantasma1,fantasma.initFantasma2,fantasma.initFantasma3,fantasma.initFantasma4)
 
-    animation = player.animacao(posX, posY, direcao)
-    animation2 = player2.animacao(client.oponeteposX,client.oponeteposY,client.oponetedirecao)
+    animation = player.animacao(posX, posY, direcao,player.animationpacman[0])
+    
+    animation2 = player.animacao(client.oponeteposX,client.oponeteposY,client.oponetedirecao,player.animationpacman[1])
 
     client.playersPos(posX,posY,direcao)
 
@@ -591,8 +615,9 @@ while running:
     # Desenha a imagem atual do Pacman na tela
     current_image, current_rect = animation[frame]
     screen.blit(current_image, current_rect.topleft)
-    current_image2, current_rect2 = animation2[frame]
-    screen.blit(current_image2, current_rect2.topleft)
+    
+    current_image, current_rect = animation2[frame]
+    screen.blit(current_image, current_rect.topleft)
     
     screen.blit(fantasma.Fantasmas1,(fantasma.initFantasma1[0]-15,fantasma.initFantasma1[1]-15))
     screen.blit(fantasma.Fantasmas2,(fantasma.initFantasma2[0]-15,fantasma.initFantasma2[1]-15))

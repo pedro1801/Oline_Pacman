@@ -18,11 +18,19 @@ class clienteserver:
             client.subscribe(self.local_ip)
         def on_message(client, userdata, msg):
             vetor = msg.payload.decode().split(':')
-            if len(vetor) == 3:
+            if vetor[-1] == 'checkPos':
                 self.oponeteposX = int(vetor[0])
                 self.oponeteposY = int(vetor[1])
                 self.oponetedirecao = vetor[2] 
-
+            elif vetor[-1] == 'endGame':
+                valores = (vetor[0],vetor[1])
+                self.alltime.append(valores)
+                print(self.alltime)
+                print('Cria PopUp')
+            if msg.payload.decode() == 'StartGame':
+                self.startGame = True
+        self.alltime =[]
+        self.startGame = False
         self.oponeteposX = 320
         self.oponeteposY = 360
         self.oponetedirecao = 'e'        
@@ -51,7 +59,6 @@ class clienteserver:
     def saveTime(self,tempo):
         msg = f'{tempo}:saveTime:{self.local_ip}'
         self.client.publish("ServerPac",msg)
-
 # Classe que controla o PAC
 class Pacman:
     def __init__(self):
@@ -115,7 +122,6 @@ class Pacman:
         else:
             pass
         return dx,dy,direcao
-
 # Classe para controle dos Fantasmas
 class Fantasminha:
     def __init__(self):
@@ -411,17 +417,21 @@ player = Pacman()
 fantasma = Fantasminha()
 circulos = comidinha.circles
 circulos_colidios = []
-# Inicializa a posição e a direção
+
 posX = 640 // 2 
 posY = 640 // 2 + 40
+
 direcao = 'd'  # Direção inicial
 
 # Inicializa a animação
 animation = player.init_animacao(posX, posY,player.animationpacman[0])
+
 animation2 = player.init_animacao(client.oponeteposX,client.oponeteposY,player.animationpacman[1])
 
 clock = pygame.time.Clock()
+
 animation_speed = 25
+
 frame = 0
 
 dx, dy = 0, 0  # Movimento padrão
@@ -456,7 +466,6 @@ transparent_surfaces = [
     for rect in rects.rectangles
 ]
 
-
 def distancia(p1, p2):
     """Calcula a distância euclidiana entre dois pontos."""
     return math.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
@@ -468,6 +477,7 @@ def colisao_circulo(circulos, pacman_rect):
         if distancia((cx, cy), (pacman_rect.centerx, pacman_rect.centery )) < raio + max(pacman_rect.width - 10 , pacman_rect.height - 10 ) // 2:
             return circulo
     return None
+
 # Função para verificar colisão com retângulos e ajustar a posição do Pacman
 def handle_collision_and_teleport(posX, posY, rectangles, circulos, dx, dy):
     # Armazena as posições originais
@@ -530,10 +540,17 @@ while running:
         start_time = time.time()
         checktime = False
         
-    if len(comidinha.circles)+1 == len(circulos_colidios):
+    if 5 == len(circulos_colidios):
         end_time = time.time()
-        tempo = int(end_time-start_time)/60
-        break
+        tempo = int(end_time-start_time)
+        client.alltime.append((tempo,client.local_ip))
+        client.saveTime(tempo)
+        move = None
+        client.startGame = False
+        posX = 640 // 2 
+        posY = 640 // 2 + 40
+        direcao = 'd'  # Direção inicial
+        circulos_colidios = []
 
     screen.blit(background_image, image_rect.topleft) 
 
@@ -558,14 +575,15 @@ while running:
     dx, dy = 0, 0
 
     # Determine o deslocamento de acordo com a tecla pressionada
-    if keys[pygame.K_LEFT]:
-        move = 'esquerda'      
-    elif keys[pygame.K_RIGHT]:
-        move = 'direita'
-    elif keys[pygame.K_UP]:
-        move = 'cima'
-    elif keys[pygame.K_DOWN]:
-        move = 'baixo'
+    if client.startGame:
+        if keys[pygame.K_LEFT]:
+            move = 'esquerda'      
+        elif keys[pygame.K_RIGHT]:
+            move = 'direita'
+        elif keys[pygame.K_UP]:
+            move = 'cima'
+        elif keys[pygame.K_DOWN]:
+            move = 'baixo'
         
     dx,dy,direcao = player.move_pac(move)
     fantasma.Ghostmovement1(move)
@@ -608,9 +626,6 @@ while running:
     screen.blit(fantasma.Fantasmas2,(fantasma.initFantasma2[0]-15,fantasma.initFantasma2[1]-15))
     screen.blit(fantasma.Fantasmas3,(fantasma.initFantasma3[0]-15,fantasma.initFantasma3[1]-15))
     screen.blit(fantasma.Fantasmas4,(fantasma.initFantasma4[0]-15,fantasma.initFantasma4[1]-15))
-
- 
-
 
     # Desenha todas as retas da lista
     #for reta in comidinha.reta_pares:
