@@ -25,7 +25,6 @@ class clienteserver:
             elif vetor[-1] == 'endGame':
                 valores = (vetor[0],vetor[1])
                 self.alltime.append(valores)
-                print(self.alltime)
                 self.all_players_finished = True
             if msg.payload.decode() == 'StartGame':
                 self.startGame = True
@@ -39,13 +38,13 @@ class clienteserver:
         
         self.local_ip = 'Pedro'
 
-        self.client = mqtt.Client(client_id="Pedro")
+        self.client = mqtt.Client(client_id="Ze da manga")
 
         self.client.on_connect = on_connect
         self.client.on_message = on_message
 
         # Conecta ao broker (modificar endereço do broker conforme necessário)
-        self.client.connect("localhost", 1883, 60)
+        self.client.connect("192.168.0.2", 2000, 60)
 
         # Inicia o loop em segundo plano para manter a conexão e escutar mensagens
         self.client.loop_start()
