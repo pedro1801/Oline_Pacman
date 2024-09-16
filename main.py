@@ -37,8 +37,8 @@ class clienteserver:
         self.oponeteposY = 360
         self.oponetedirecao = 'e'        
         
-        self.local_ip = socket.gethostbyname(socket.gethostname())
-        
+        self.local_ip = 'Pedro'
+
         self.client = mqtt.Client(client_id="Pedro")
 
         self.client.on_connect = on_connect
@@ -61,14 +61,9 @@ class clienteserver:
     def saveTime(self,tempo):
         msg = f'{tempo}:saveTime:{self.local_ip}'
         self.client.publish("ServerPac",msg)
-        
-    # def reset_game(self):
-    #     self.all_players_finished = False
-    #     self.alltime = []
-    #     self.startGame = False
-    #     self.oponeteposX = 320
-    #     self.oponeteposY = 360
-    #     self.oponetedirecao = 'e'
+    def playAgain(self,lista):
+        msg = "playAgain"
+        self.client.publish("ServerPac",msg)
 
 client = clienteserver()
 client.saveIP()
@@ -97,7 +92,6 @@ frame = 0
 dx, dy = 0, 0  # Movimento padrão
 move = None
 click_points = []
-checkpoints = []
 
 # Inicialize o Pygame
 pygame.init()
@@ -227,7 +221,7 @@ while running:
         start_time = time.time()
         checktime = False
         
-    if 5 == len(circulos_colidios):
+    if len(circulos)+1 == len(circulos_colidios):
         move = None
         end_time = time.time()
         tempo = int(end_time-start_time)
@@ -244,23 +238,19 @@ while running:
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            print(checkpoints)
             pygame.quit()
             sys.exit()
         if game_over and client.all_players_finished:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 click_points.append(event.pos)
                 # Se houver dois pontos, desenha a reta
-                if len(click_points) % 2 == 0:
-                # pygame.draw.line(screen, (255,255,255), click_points[0], click_points[1], 2)
-                    checkpoints.append(tuple(click_points))
-                    click_points = []
+
                 if play_again_button.collidepoint(event.pos):
                     game_over = False
                     checktime = True
                     client.alltime = []
                     fantasma = Fantasminha()
-                    player = Pacman()
+                    client.playAgain([])
                 elif disconnect_button.collidepoint(event.pos):
                     pygame.quit()
                     sys.exit()
@@ -329,9 +319,7 @@ while running:
         #for reta in comidinha.reta_pares:
         #    start, end = reta
         #    pygame.draw.line(screen, (255, 255, 255), start, end, 2)  # 2 é a espessura da linha        
-        for reta in checkpoints:
-            start, end = reta
-            pygame.draw.line(screen, (255, 0, 0), start, end, 2)  # 2 é a espessura da linha     
+
         # Atualize a tela
         pygame.display.flip()
 
@@ -346,9 +334,6 @@ while running:
     
     pygame.display.flip()
     clock.tick(animation_speed)
-
-pygame.quit()
-sys.exit()
 
 pygame.quit()
 sys.exit()
